@@ -17,16 +17,14 @@ if [ -f /tmp/lastip6 ]; then
 fi
 
 #get current ip
-# ip -4 addr show eth0 | grep inet | awk '{print $2}' | cut -d/ -f1
 IP=$(curl -s http://checkip4.spdyn.de/)
 echo "current IPv4 is $IP"
-# ip -6 addr show eth0 | grep inet6 | awk -F '[ \t]+|/' '{print $3}' | grep -v ^::1 | head -n 1
-# ip -6 addr show eth0 | grep inet6 | awk -F '[ \t]+|/' '{print $3}'
 IP6=$(curl -s http://checkip6.spdyn.de/)
+#IP6=$(ip -6 addr show eth0 | grep inet6 | awk -F '[ \t]+|/' '{print $3}' | grep -v ^::1 | head -n 1)
 echo "current IPv6 is $IP6"
 
 #check if ipv4 and ipv6 are the same
-if [[ "$IP" = "$LASTIP" && "$IP6" = "$LASTIP6"]]; then
+if [ "$IP" = "$LASTIP" ] && [ "$IP6" = "$LASTIP6" ]; then
 	echo "no ip change"
 	exit
 else
@@ -35,8 +33,10 @@ fi
 
 #update string
 updateip() {
+	echo "Updating IPv4"
 	RETURNCODE=$(curl -s --user $1:$2 "https://update.spdyn.de/nic/update?hostname=$1&myip=$IP&pass=$2")
 	evalResult $RETURNCODE
+	echo "Updating IPv6"
 	RETURNCODE=$(curl -s --user $1:$2 "https://update.spdyn.de/nic/update?hostname=$1&myip=$IP6&pass=$2")
 	evalResult $RETURNCODE
 }
@@ -46,11 +46,11 @@ evalResult() {
 	case $1 in
 
 	nochg*)
-		echo "update done... IP was up2date"
+		echo "update done... IP was up-to-date"
 		;;
 
 	good*)
-		echo "update done... IP changed to $IP"
+		echo "update done... IP changed"
 		;;
 
 	abuse*)
